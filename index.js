@@ -9,14 +9,19 @@ const { initializeCronJobs } = require("./services/cronService");
 dotenv.config();
 
 const app = express();
-
-// CORS configuration - MUST BE BEFORE OTHER MIDDLEWARE
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: "https://wallstreet-one.vercel.app",
+  credentials: true
 }));
+// CORS configuration - MUST BE BEFORE OTHER MIDDLEWARE
+// app.use(cors({
+//   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization']
+// }));
 
 
 // Import routes
@@ -29,13 +34,12 @@ const notificationRoutes = require("./routes/notification.route");
 const adminRoutes = require('./routes/admin.route');
 
 // Body parsing middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
 
 // Logging middleware (only in development)
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
+// if (process.env.NODE_ENV === 'development') {
+//   app.use(morgan('dev'));
+// }
 
 // Home route
 app.get("/", (req, res) => {
