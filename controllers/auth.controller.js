@@ -98,16 +98,14 @@ exports.register = catchAsync(async (req, res, next) => {
   const verificationToken = newUser.createEmailVerificationToken();
   await newUser.save({ validateBeforeSave: false });
 
-  try {
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-    await sendEmail({
-      email: newUser.email,
-      subject: 'Email Verification - Wallstreet Investment',
-      message: `Welcome ${newUser.name}! Please verify your email by clicking: ${verificationUrl}`
-    });
-  } catch (err) {
-    console.error('Email sending failed:', err);
-  }
+  // FIX: fire-and-forget — don't await email, it was blocking registration
+  // for 30-60s while Render's network timed out on the SMTP connection
+  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+  sendEmail({
+    email: newUser.email,
+    subject: 'Email Verification - Wallstreet Investment',
+    message: `Welcome ${newUser.name}! Please verify your email by clicking: ${verificationUrl}`
+  }).catch(err => console.warn('⚠️ Welcome email failed:', err.message));
 
   const Notification = require('../models/notification.model.js');
   await Notification.create({
