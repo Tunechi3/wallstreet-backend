@@ -6,7 +6,8 @@ exports.getNotifications = async (req, res) => {
     const userId = req.user.id;
     const { isRead, limit = 50 } = req.query;
 
-    const query = { userId };
+    // ✅ FIX: model field is `user`, not `userId`
+    const query = { user: userId };
     if (isRead !== undefined) {
       query.isRead = isRead === 'true';
     }
@@ -22,8 +23,8 @@ exports.getNotifications = async (req, res) => {
       title: notif.title,
       message: notif.message,
       isRead: notif.isRead,
-      time: notif.timeAgo,
-      link: notif.link,
+      time: notif.createdAt,
+      link: notif.actionUrl,
       metadata: notif.metadata,
       createdAt: notif.createdAt,
       readAt: notif.readAt
@@ -48,6 +49,7 @@ exports.getUnreadCount = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    // ✅ FIX: model static uses `user` field internally — pass userId correctly
     const count = await Notification.getUnreadCount(userId);
 
     res.status(200).json({
@@ -70,7 +72,8 @@ exports.markAsRead = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const notification = await Notification.findOne({ _id: id, userId });
+    // ✅ FIX: query by `user` field, not `userId`
+    const notification = await Notification.findOne({ _id: id, user: userId });
 
     if (!notification) {
       return res.status(404).json({
@@ -101,6 +104,7 @@ exports.markAllAsRead = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    // ✅ model static uses `user` field — works correctly
     await Notification.markAllAsRead(userId);
 
     res.status(200).json({
@@ -123,7 +127,8 @@ exports.deleteNotification = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const notification = await Notification.findOneAndDelete({ _id: id, userId });
+    // ✅ FIX: query by `user` field, not `userId`
+    const notification = await Notification.findOneAndDelete({ _id: id, user: userId });
 
     if (!notification) {
       return res.status(404).json({
@@ -151,7 +156,8 @@ exports.deleteAllRead = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const result = await Notification.deleteMany({ userId, isRead: true });
+    // ✅ FIX: query by `user` field, not `userId`
+    const result = await Notification.deleteMany({ user: userId, isRead: true });
 
     res.status(200).json({
       success: true,

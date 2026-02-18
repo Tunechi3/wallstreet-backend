@@ -14,7 +14,7 @@ exports.getDashboardData = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({
-        status: 'fail', // ✅ Changed from success: false
+        status: 'fail',
         message: 'User not found'
       });
     }
@@ -71,9 +71,9 @@ exports.getDashboardData = async (req, res) => {
       createdAt: txn.createdAt
     }));
 
-    // Fetch unread notifications
+    // ✅ FIX: Notification model uses 'user' field, not 'userId'
     const notifications = await Notification.find({ 
-      userId, 
+      user: userId,   // ← was: userId
       isRead: false 
     })
       .sort({ createdAt: -1 })
@@ -129,9 +129,8 @@ exports.getDashboardData = async (req, res) => {
       createdAt: user.createdAt
     };
 
-    // ✅ Changed response format
     res.status(200).json({
-      status: 'success', // ✅ Use 'status' instead of 'success'
+      status: 'success',
       data: {
         user: userData,
         activeInvestments: formattedInvestments,
@@ -150,7 +149,7 @@ exports.getDashboardData = async (req, res) => {
   } catch (error) {
     console.error('❌ Error fetching dashboard data:', error);
     res.status(500).json({
-      status: 'error', // ✅ Changed from success: false
+      status: 'error',
       message: 'Error fetching dashboard data',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -207,7 +206,7 @@ exports.getUserStats = async (req, res) => {
     });
 
     res.status(200).json({
-      status: 'success', // ✅ Changed
+      status: 'success',
       data: {
         investments: invStats,
         transactions: transactionStats
@@ -217,7 +216,7 @@ exports.getUserStats = async (req, res) => {
   } catch (error) {
     console.error('❌ Error fetching user stats:', error);
     res.status(500).json({
-      status: 'error', // ✅ Changed
+      status: 'error',
       message: 'Error fetching user statistics'
     });
   }
@@ -265,14 +264,14 @@ exports.getPortfolioSummary = async (req, res) => {
     }
 
     res.status(200).json({
-      status: 'success', // ✅ Changed
+      status: 'success',
       data: portfolioMetrics
     });
 
   } catch (error) {
     console.error('❌ Error fetching portfolio summary:', error);
     res.status(500).json({
-      status: 'error', // ✅ Changed
+      status: 'error',
       message: 'Error fetching portfolio summary'
     });
   }
