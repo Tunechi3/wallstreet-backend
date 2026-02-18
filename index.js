@@ -100,12 +100,6 @@ app.use((err, req, res, next) => {
 const port = process.env.PORT || 5000;
 app.listen(port, "0.0.0.0", () => {
   console.log(`🚀 Server ti gbera lori port ${port}`);
-  console.log(`📍 Server URL: http://localhost:${port}`);
-  console.log(`📍 API Base URL: http://localhost:${port}/api`);
-  console.log(`📊 Dashboard API: http://localhost:${port}/api/dashboard`);
-  console.log(`💰 Investments API: http://localhost:${port}/api/investments`);
-  console.log(`💳 Transactions API: http://localhost:${port}/api/transactions`);
-  console.log(`🔔 Notifications API: http://localhost:${port}/api/notifications`);
 });
 
 // Handle unhandled promise rejections
