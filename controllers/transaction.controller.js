@@ -5,6 +5,16 @@ const Notification = require('../models/notification.model');
 // ✅ Helper: always round money to 2 decimal places to prevent floating point drift
 const round2 = (v) => Math.round((v || 0) * 100) / 100;
 
+// ── Wallet addresses for each payment method ──────────────────────────────────
+const PLATFORM_WALLETS = {
+  'Bitcoin (BTC)':  'bc1qd2dh37ypm4qqgx6pqm9euxfdpjjdzheanwpl95',
+  'Ethereum (ETH)': '0xf6b8b7E0360B0F30e0CaFE3C204491F06f271D24',
+  'USDT (TRC20)':   '0xf6b8b7E0360B0F30e0CaFE3C204491F06f271D24',
+  'Solana (SOL)':   'BnPARD4pinVAyMSmGRbdZ3w2XrZg1G7bjJsBbqxdynkj',
+  'USDC (ERC20)':   '0xf6b8b7E0360B0F30e0CaFE3C204491F06f271D24',
+  'Tron (TRX)':     'TVeauDNhNvhE35yomVoAEVe27G2yTzyCDe',
+};
+
 // Get all transactions for user
 exports.getUserTransactions = async (req, res) => {
   try {
@@ -98,6 +108,9 @@ exports.createDeposit = async (req, res) => {
       { transactionId: transaction._id }
     );
 
+    // Resolve the correct platform wallet address for the chosen method
+    const platformWallet = PLATFORM_WALLETS[method] || PLATFORM_WALLETS['Bitcoin (BTC)'];
+
     res.status(201).json({
       success: true,
       message: 'Deposit request created successfully. Please wait for confirmation.',
@@ -107,7 +120,7 @@ exports.createDeposit = async (req, res) => {
         method,
         status: 'pending',
         paymentDetails: {
-          walletAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+          walletAddress: platformWallet,
           amount: depositAmount,
           note: 'Please send exact amount to avoid delays'
         }

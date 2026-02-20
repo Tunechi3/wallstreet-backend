@@ -19,7 +19,7 @@ const transactionSchema = new mongoose.Schema({
   },
   method: {
     type: String,
-    enum: ['Bitcoin (BTC)', 'Ethereum (ETH)', 'USDT (TRC20)', 'Bank Transfer', 'Internal', 'N/A'],
+    enum: ['Bitcoin (BTC)', 'Ethereum (ETH)', 'USDT (TRC20)', 'Solana (SOL)', 'USDC (ERC20)', 'Tron (TRX)', 'Bank Transfer', 'Internal', 'N/A'],
     default: 'N/A'
   },
   status: {
