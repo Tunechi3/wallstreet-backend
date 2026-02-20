@@ -8,113 +8,79 @@ const mongoose = require('mongoose');
 const round2 = (v) => Math.round((v || 0) * 100) / 100;
 
 // ─── Investment Plans Configuration ─────────────────────────────────────────
-// 3 Daily | 3 × 72-Hour | 2 Weekly | 1 Monthly  =  9 plans total
 const INVESTMENT_PLANS = [
-  // ── DAILY PLANS ────────────────────────────────────────────────────────────
+  // ── DAILY PLAN ─────────────────────────────────────────────────────────────
   {
     id: 1,
     name: 'Daily Starter',
     category: 'daily',
-    minAmount: 100,
-    maxAmount: 999,
-    dailyReturn: 3,
-    duration: 1,           // 1 day
-    totalReturn: 3,
-    description: 'Quick 24-hour cycle. Perfect for testing the waters.'
-  },
-  {
-    id: 2,
-    name: 'Daily Growth',
-    category: 'daily',
     minAmount: 1000,
-    maxAmount: 4999,
-    dailyReturn: 5,
-    duration: 1,
-    totalReturn: 5,
-    description: 'Accelerated daily returns for mid-range capital.'
-  },
-  {
-    id: 3,
-    name: 'Daily Elite',
-    category: 'daily',
-    minAmount: 5000,
-    maxAmount: 19999,
-    dailyReturn: 7,
-    duration: 1,
-    totalReturn: 7,
-    description: 'Premium daily returns for serious daily traders.'
+    maxAmount: 3000,
+    dailyReturn: 11,
+    duration: 1,           // 1 day
+    totalReturn: 11,
+    description: 'Quick 24-hour cycle. Earn 11% on your investment in just one day.'
   },
 
-  // ── 72-HOUR PLANS ──────────────────────────────────────────────────────────
+  // ── 3-DAY PLAN ─────────────────────────────────────────────────────────────
   {
-    id: 4,
-    name: '72H Bronze',
-    category: '72hours',
-    minAmount: 500,
-    maxAmount: 2499,
-    dailyReturn: 4,         // 4%/day × 3 days = 12%
-    duration: 3,            // 3 days = 72 hours
-    totalReturn: 12,
-    description: 'Triple-day compounding. Entry-level power cycle.'
-  },
-  {
-    id: 5,
-    name: '72H Silver',
-    category: '72hours',
-    minAmount: 2500,
-    maxAmount: 9999,
-    dailyReturn: 6,         // 6% × 3 = 18%
+    id: 2,
+    name: '3-Day Plan',
+    category: '3days',
+    minAmount: 100,
+    maxAmount: 999,
+    dailyReturn: 11.67,    // ~35% over 3 days
     duration: 3,
-    totalReturn: 18,
-    description: 'Turbo-charged 3-day plan for high-frequency investors.'
-  },
-  {
-    id: 6,
-    name: '72H Gold',
-    category: '72hours',
-    minAmount: 10000,
-    maxAmount: Infinity,
-    dailyReturn: 8.33,      // ~25% over 3 days
-    duration: 3,
-    totalReturn: 25,
-    description: 'Maximum 72-hour yield for top-tier investors.'
+    totalReturn: 35,
+    description: 'Solid 3-day returns. Perfect for entry-level investors.'
   },
 
   // ── WEEKLY PLANS ───────────────────────────────────────────────────────────
   {
-    id: 7,
-    name: 'Weekly Pro',
+    id: 3,
+    name: 'Weekly Starter',
     category: 'weekly',
     minAmount: 1000,
-    maxAmount: 24999,
-    dailyReturn: 5.71,      // ~40% over 7 days
+    maxAmount: 4999,
+    dailyReturn: 7.86,     // ~55% over 7 days
     duration: 7,
-    totalReturn: 40,
-    description: 'Steady 7-day returns with daily compounding.'
+    totalReturn: 55,
+    description: 'Steady 7-day plan for mid-range investors. 55% total return.'
   },
   {
-    id: 8,
-    name: 'Weekly VIP',
+    id: 4,
+    name: 'Weekly Growth',
     category: 'weekly',
-    minAmount: 25000,
-    maxAmount: Infinity,
-    dailyReturn: 8.57,      // ~60% over 7 days
+    minAmount: 5000,
+    maxAmount: 19999,
+    dailyReturn: 10.71,    // ~75% over 7 days
     duration: 7,
-    totalReturn: 60,
-    description: 'VIP exclusive weekly plan with premium returns.'
+    totalReturn: 75,
+    description: 'High-yield weekly plan for serious investors. 75% total return.'
+  },
+  {
+    id: 5,
+    name: 'Weekly Elite',
+    category: 'weekly',
+    minAmount: 20000,
+    maxAmount: 99999,
+    dailyReturn: 25,       // 175% over 7 days
+    duration: 7,
+    totalReturn: 175,
+    description: 'Elite weekly plan with maximum returns for top-tier investors.'
   },
 
-  // ── MONTHLY PLAN ───────────────────────────────────────────────────────────
+  // ── 3-WEEK PLAN ────────────────────────────────────────────────────────────
   {
-    id: 9,
-    name: 'Monthly Titan',
-    category: 'monthly',
-    minAmount: 5000,
+    id: 6,
+    name: '3-Week Titan',
+    category: '3weeks',
+    minAmount: 100000,
     maxAmount: Infinity,
-    dailyReturn: 10,        // 10%/day × 30 days = 300%
-    duration: 30,
-    totalReturn: 300,
-    description: 'The ultimate 30-day wealth accelerator.'
+    dailyReturn: 17.86,    // ~375% over 21 days
+    duration: 21,
+    totalReturn: 375,
+    description: 'The ultimate 3-week wealth accelerator for elite investors. 375% total return.'
   }
 ];
 
