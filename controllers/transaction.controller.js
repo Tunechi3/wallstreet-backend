@@ -9,7 +9,7 @@ const round2 = (v) => Math.round((v || 0) * 100) / 100;
 const PLATFORM_WALLETS = {
   'Bitcoin (BTC)':  'bc1qd2dh37ypm4qqgx6pqm9euxfdpjjdzheanwpl95',
   'Ethereum (ETH)': '0xf6b8b7E0360B0F30e0CaFE3C204491F06f271D24',
-  'USDT (TRC20)':   '0xf6b8b7E0360B0F30e0CaFE3C204491F06f271D24',
+  'USDT (ERC20)':   '0xf6b8b7E0360B0F30e0CaFE3C204491F06f271D24',
   'Solana (SOL)':   'BnPARD4pinVAyMSmGRbdZ3w2XrZg1G7bjJsBbqxdynkj',
   'USDC (ERC20)':   '0xf6b8b7E0360B0F30e0CaFE3C204491F06f271D24',
   'Tron (TRX)':     'TVeauDNhNvhE35yomVoAEVe27G2yTzyCDe',

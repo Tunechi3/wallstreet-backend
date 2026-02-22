@@ -5,7 +5,11 @@ const QRCode = require('qrcode');
 const User = require('../models/user.model');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const { sendEmail } = require('../utils/emailService');
+const {
+  sendWelcomeEmail,
+  sendVerificationEmail,
+  sendPasswordResetEmail
+} = require('../utils/emailService');
 
 // ==========================================
 // HELPER FUNCTIONS
@@ -98,14 +102,10 @@ exports.register = catchAsync(async (req, res, next) => {
   const verificationToken = newUser.createEmailVerificationToken();
   await newUser.save({ validateBeforeSave: false });
 
-  // FIX: fire-and-forget — don't await email, it was blocking registration
-  // for 30-60s while Render's network timed out on the SMTP connection
+  // Fire-and-forget — don't await email, it was blocking registration
   const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-  sendEmail({
-    email: newUser.email,
-    subject: 'Email Verification - Wallstreet Investment',
-    message: `Welcome ${newUser.name}! Please verify your email by clicking: ${verificationUrl}`
-  }).catch(err => console.warn('⚠️ Welcome email failed:', err.message));
+  sendWelcomeEmail(newUser, verificationUrl)
+    .catch(err => console.warn('⚠️ Welcome email failed:', err.message));
 
   const Notification = require('../models/notification.model.js');
   await Notification.create({
@@ -142,10 +142,8 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('Your account has been suspended. Please contact support.', 403));
   }
 
-  // ── 2FA check ────────────────────────────────────────────────────────────
   if (user.twoFactorEnabled) {
     if (!totpCode) {
-      // Tell the frontend 2FA is required without issuing a token yet
       return res.status(200).json({
         status: 'requires_2fa',
         message: 'Please provide your 2FA code to continue.'
@@ -156,7 +154,7 @@ exports.login = catchAsync(async (req, res, next) => {
       secret: user.twoFactorSecret,
       encoding: 'base32',
       token: totpCode,
-      window: 1 // allow 30s clock drift
+      window: 1
     });
 
     if (!isValid) {
@@ -258,12 +256,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   try {
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
-    await sendEmail({
-      email: user.email,
-      subject: 'Password Reset Request (valid for 10 minutes)',
-      message: `Forgot your password? Click here to reset: ${resetUrl}\n\nIf you didn't request this, please ignore this email.`
-    });
+    await sendPasswordResetEmail(user, resetUrl);
 
     res.status(200).json({
       status: 'success',
@@ -406,11 +399,7 @@ exports.resendVerificationEmail = catchAsync(async (req, res, next) => {
 
   try {
     const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-    await sendEmail({
-      email: user.email,
-      subject: 'Email Verification - Wallstreet Investment',
-      message: `Please verify your email by clicking: ${verificationUrl}`
-    });
+    await sendVerificationEmail(user, verificationUrl);
 
     res.status(200).json({
       status: 'success',
@@ -457,24 +446,21 @@ exports.setup2FA = catchAsync(async (req, res, next) => {
     return next(new AppError('2FA is already enabled on this account.', 400));
   }
 
-  // Generate a new TOTP secret
   const secret = speakeasy.generateSecret({
     name: `Wallstreet Investment (${user.email})`,
     length: 20
   });
 
-  // Temporarily store the secret (not yet confirmed/activated)
   user.twoFactorSecret = secret.base32;
   await user.save({ validateBeforeSave: false });
 
-  // Generate QR code as a data URL the frontend can display directly
   const qrCodeDataURL = await QRCode.toDataURL(secret.otpauth_url);
 
   res.status(200).json({
     status: 'success',
     data: {
-      qrCode: qrCodeDataURL,       // base64 PNG — show in <img src="...">
-      secret: secret.base32,       // manual entry fallback
+      qrCode: qrCodeDataURL,
+      secret: secret.base32,
       message: 'Scan the QR code with Google Authenticator or Authy, then call /2fa/verify with the 6-digit code.'
     }
   });
@@ -511,7 +497,6 @@ exports.verify2FA = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid code. Please try again with a fresh code from your app.', 401));
   }
 
-  // Activate 2FA
   user.twoFactorEnabled = true;
   await user.save({ validateBeforeSave: false });
 
@@ -545,13 +530,11 @@ exports.disable2FA = catchAsync(async (req, res, next) => {
     return next(new AppError('2FA is not enabled on this account.', 400));
   }
 
-  // Verify password
   const isPasswordCorrect = await user.comparePassword(password, user.password);
   if (!isPasswordCorrect) {
     return next(new AppError('Incorrect password.', 401));
   }
 
-  // Verify current TOTP code
   const isValidToken = speakeasy.totp.verify({
     secret: user.twoFactorSecret,
     encoding: 'base32',
@@ -563,7 +546,6 @@ exports.disable2FA = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid 2FA code.', 401));
   }
 
-  // Disable 2FA and clear secret
   user.twoFactorEnabled = false;
   user.twoFactorSecret = undefined;
   await user.save({ validateBeforeSave: false });

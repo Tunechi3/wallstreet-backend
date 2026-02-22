@@ -1,52 +1,10 @@
 const nodemailer = require('nodemailer');
 
-// ==========================================
-// EMAIL TRANSPORTER CONFIGURATION
-// ==========================================
-
-/**
- * Create email transporter
- * Using Gmail SMTP (can be changed to any email service)
- */
 const createTransporter = () => {
-  // Production: Use real email service (Gmail, SendGrid, Mailgun, etc.)
-  if (process.env.NODE_ENV === 'production') {
-    // Example with Gmail
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD
-      }
-    });
-    
-    /* Example with SendGrid
-    return nodemailer.createTransport({
-      host: 'smtp.sendgrid.net',
-      port: 587,
-      auth: {
-        user: 'apikey',
-        pass: process.env.SENDGRID_API_KEY
-      }
-    });
-    */
-    
-    /* Example with custom SMTP
-    return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      auth: {
-        user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD
-      }
-    });
-    */
-  }
-  
-  // Development: Use Mailtrap or Ethereal
   return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.mailtrap.io',
-    port: process.env.EMAIL_PORT || 2525,
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT),
+    secure: parseInt(process.env.EMAIL_PORT) === 465,
     auth: {
       user: process.env.EMAIL_USERNAME,
       pass: process.env.EMAIL_PASSWORD
@@ -54,38 +12,20 @@ const createTransporter = () => {
   });
 };
 
-// ==========================================
-// SEND EMAIL FUNCTION
-// ==========================================
-
-/**
- * Send email
- * 
- * @param {Object} options - Email options
- * @param {String} options.email - Recipient email
- * @param {String} options.subject - Email subject
- * @param {String} options.message - Plain text message
- * @param {String} options.html - HTML message (optional)
- * @returns {Promise}
- */
 const sendEmail = async (options) => {
-  // 1) Create transporter
   const transporter = createTransporter();
-  
-  // 2) Define email options
+
   const mailOptions = {
-    from: `Wallstreet Investment <${process.env.EMAIL_FROM || 'noreply@wallstreet.com'}>`,
+    from: `Wallstreet Investment <${process.env.EMAIL_FROM}>`,
     to: options.email,
     subject: options.subject,
     text: options.message
   };
-  
-  // Add HTML if provided
+
   if (options.html) {
     mailOptions.html = options.html;
   }
-  
-  // 3) Send email
+
   try {
     await transporter.sendMail(mailOptions);
     console.log(`Email sent successfully to ${options.email}`);
@@ -95,13 +35,40 @@ const sendEmail = async (options) => {
   }
 };
 
-// ==========================================
-// EMAIL TEMPLATES
-// ==========================================
+const sendVerificationEmail = async (user, verificationUrl) => {
+  const subject = 'Email Verification - Wallstreet Investment';
+  const message = `
+Hello ${user.name},
 
-/**
- * Send welcome email
- */
+Please verify your email address by clicking the link below:
+
+${verificationUrl}
+
+This link will expire in 24 hours.
+
+If you didn't create an account, please ignore this email.
+
+Best regards,
+Wallstreet Investment Team
+  `.trim();
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #555a69;">Verify Your Email Address</h2>
+      <p>Hello ${user.name},</p>
+      <p>Please verify your email address by clicking the button below:</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${verificationUrl}" style="background-color: #555a69; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Email</a>
+      </div>
+      <p style="color: #666; font-size: 14px;">This link will expire in 24 hours.</p>
+      <p style="color: #666; font-size: 14px;">If you didn't create an account, please ignore this email.</p>
+      <p>Best regards,<br>Wallstreet Investment Team</p>
+    </div>
+  `;
+
+  await sendEmail({ email: user.email, subject, message, html });
+};
+
 const sendWelcomeEmail = async (user, verificationUrl) => {
   const subject = 'Welcome to Wallstreet Investment!';
   const message = `
@@ -120,7 +87,7 @@ Thank you for joining us!
 Best regards,
 Wallstreet Investment Team
   `.trim();
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #555a69;">Welcome to Wallstreet Investment!</h2>
@@ -135,18 +102,10 @@ Wallstreet Investment Team
       <p>Best regards,<br>Wallstreet Investment Team</p>
     </div>
   `;
-  
-  await sendEmail({
-    email: user.email,
-    subject,
-    message,
-    html
-  });
+
+  await sendEmail({ email: user.email, subject, message, html });
 };
 
-/**
- * Send password reset email
- */
 const sendPasswordResetEmail = async (user, resetUrl) => {
   const subject = 'Password Reset Request';
   const message = `
@@ -165,7 +124,7 @@ If you didn't request this, please ignore this email.
 Best regards,
 Wallstreet Investment Team
   `.trim();
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #555a69;">Password Reset Request</h2>
@@ -180,18 +139,10 @@ Wallstreet Investment Team
       <p>Best regards,<br>Wallstreet Investment Team</p>
     </div>
   `;
-  
-  await sendEmail({
-    email: user.email,
-    subject,
-    message,
-    html
-  });
+
+  await sendEmail({ email: user.email, subject, message, html });
 };
 
-/**
- * Send deposit confirmation email
- */
 const sendDepositConfirmationEmail = async (user, amount, method) => {
   const subject = 'Deposit Confirmed';
   const message = `
@@ -206,7 +157,7 @@ Thank you for investing with us!
 Best regards,
 Wallstreet Investment Team
   `.trim();
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #27ae60;">Deposit Confirmed</h2>
@@ -221,18 +172,10 @@ Wallstreet Investment Team
       <p>Best regards,<br>Wallstreet Investment Team</p>
     </div>
   `;
-  
-  await sendEmail({
-    email: user.email,
-    subject,
-    message,
-    html
-  });
+
+  await sendEmail({ email: user.email, subject, message, html });
 };
 
-/**
- * Send withdrawal confirmation email
- */
 const sendWithdrawalConfirmationEmail = async (user, amount, method) => {
   const subject = 'Withdrawal Processed';
   const message = `
@@ -245,7 +188,7 @@ The funds should arrive in your account within 1-3 business days.
 Best regards,
 Wallstreet Investment Team
   `.trim();
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #555a69;">Withdrawal Processed</h2>
@@ -259,18 +202,10 @@ Wallstreet Investment Team
       <p>Best regards,<br>Wallstreet Investment Team</p>
     </div>
   `;
-  
-  await sendEmail({
-    email: user.email,
-    subject,
-    message,
-    html
-  });
+
+  await sendEmail({ email: user.email, subject, message, html });
 };
 
-/**
- * Send investment payout notification
- */
 const sendPayoutNotificationEmail = async (user, amount, investment) => {
   const subject = 'Investment Payout Received';
   const message = `
@@ -285,7 +220,7 @@ Keep investing!
 Best regards,
 Wallstreet Investment Team
   `.trim();
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #27ae60;">Investment Payout Received</h2>
@@ -300,18 +235,10 @@ Wallstreet Investment Team
       <p>Best regards,<br>Wallstreet Investment Team</p>
     </div>
   `;
-  
-  await sendEmail({
-    email: user.email,
-    subject,
-    message,
-    html
-  });
+
+  await sendEmail({ email: user.email, subject, message, html });
 };
 
-/**
- * Send referral commission email
- */
 const sendReferralCommissionEmail = async (user, amount, referredUser) => {
   const subject = 'Referral Commission Earned';
   const message = `
@@ -328,7 +255,7 @@ Keep referring!
 Best regards,
 Wallstreet Investment Team
   `.trim();
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #27ae60;">Referral Commission Earned</h2>
@@ -343,21 +270,13 @@ Wallstreet Investment Team
       <p>Best regards,<br>Wallstreet Investment Team</p>
     </div>
   `;
-  
-  await sendEmail({
-    email: user.email,
-    subject,
-    message,
-    html
-  });
-};
 
-// ==========================================
-// EXPORTS
-// ==========================================
+  await sendEmail({ email: user.email, subject, message, html });
+};
 
 module.exports = {
   sendEmail,
+  sendVerificationEmail,
   sendWelcomeEmail,
   sendPasswordResetEmail,
   sendDepositConfirmationEmail,
@@ -365,15 +284,3 @@ module.exports = {
   sendPayoutNotificationEmail,
   sendReferralCommissionEmail
 };
-
-// ==========================================
-// USAGE EXAMPLE
-// ==========================================
-
-/*
-const { sendWelcomeEmail } = require('../utils/emailService');
-
-// In controller
-const verificationUrl = `${process.env.FRONTEND_URL}/verify/${token}`;
-await sendWelcomeEmail(user, verificationUrl);
-*/
