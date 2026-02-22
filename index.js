@@ -82,6 +82,35 @@ app.use((err, req, res, next) => {
   });
 });
 
+app.get('/test-email', async (req, res) => {
+  const nodemailer = require('nodemailer');
+  
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT),
+    secure: true,
+    auth: {
+      user: process.env.EMAIL_USERNAME,
+      pass: process.env.EMAIL_PASSWORD
+    }
+  });
+
+  try {
+    await transporter.verify();
+    
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: 'your-personal-email@gmail.com', // ← replace with your real email
+      subject: 'Test Email',
+      text: 'If you see this, emails are working!'
+    });
+
+    res.send('✅ Email sent successfully');
+  } catch (err) {
+    res.send(`❌ Failed: ${err.message}`);
+  }
+});
+
 // ─── 9. Database Connection ───────────────────────────────────────────────────
 mongoose
   .connect(process.env.URI || process.env.MONGO_URI)
