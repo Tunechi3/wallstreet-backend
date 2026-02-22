@@ -64,24 +64,6 @@ app.use("/api/transactions",  transactionRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin",         adminRoutes);
 
-// ─── 7. 404 Handler ───────────────────────────────────────────────────────────
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
-    path: req.originalUrl,
-  });
-});
-
-// ─── 8. Global Error Handler ──────────────────────────────────────────────────
-app.use((err, req, res, next) => {
-  console.error("❌ Error:", err.stack);
-  res.status(err.statusCode || err.status || 500).json({
-    success: false,
-    message: err.message || "Internal server error",
-  });
-});
-
 app.get('/test-email', async (req, res) => {
   const nodemailer = require('nodemailer');
   
@@ -100,7 +82,7 @@ app.get('/test-email', async (req, res) => {
     
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
-      to: 'your-personal-email@gmail.com', // ← replace with your real email
+      to: 'frankyjills6625@gmail.com', // ← your real email
       subject: 'Test Email',
       text: 'If you see this, emails are working!'
     });
@@ -109,6 +91,25 @@ app.get('/test-email', async (req, res) => {
   } catch (err) {
     res.send(`❌ Failed: ${err.message}`);
   }
+});
+
+
+// ─── 7. 404 Handler ───────────────────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+    path: req.originalUrl,
+  });
+});
+
+// ─── 8. Global Error Handler ──────────────────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error("❌ Error:", err.stack);
+  res.status(err.statusCode || err.status || 500).json({
+    success: false,
+    message: err.message || "Internal server error",
+  });
 });
 
 // ─── 9. Database Connection ───────────────────────────────────────────────────
