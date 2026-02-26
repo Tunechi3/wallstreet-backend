@@ -11,7 +11,14 @@ const app = express();
 
 // ─── 1. CORS (must be first) ─────────────────────────────────────────────────
 const corsOptions = {
-  origin: "https://www.wallstreetstrades.com",
+  origin: [
+    "https://www.wallstreetstrades.com",
+    "https://wallstreetstrades.com",
+    "http://www.wallstreetstrades.com",
+    "http://wallstreetstrades.com",
+    "http://localhost:5173",
+    "http://localhost:3000",
+  ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
