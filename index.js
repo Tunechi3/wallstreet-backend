@@ -64,35 +64,6 @@ app.use("/api/transactions",  transactionRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin",         adminRoutes);
 
-app.get('/test-email', async (req, res) => {
-  const nodemailer = require('nodemailer');
-  
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT),
-    secure: true,
-    auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD
-    }
-  });
-
-  try {
-    await transporter.verify();
-    
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to: 'frankyjills6625@gmail.com', // ← your real email
-      subject: 'Test Email',
-      text: 'If you see this, emails are working!'
-    });
-
-    res.send('✅ Email sent successfully');
-  } catch (err) {
-    res.send(`❌ Failed: ${err.message}`);
-  }
-});
-
 
 // ─── 7. 404 Handler ───────────────────────────────────────────────────────────
 app.use((req, res) => {
