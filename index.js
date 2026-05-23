@@ -12,6 +12,8 @@ const app = express();
 // ─── 1. CORS (must be first) ─────────────────────────────────────────────────
 const corsOptions = {
   origin: [
+    "https://www.wallstreetstrade.com",   // ✅ add this
+    "https://wallstreetstrade.com",  
     "https://www.wallstreetstrades.com",
     "https://wallstreetstrades.com",
     "http://www.wallstreetstrades.com",
