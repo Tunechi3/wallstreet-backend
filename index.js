@@ -16,6 +16,8 @@ const corsOptions = {
     "https://wallstreetstrades.com",
     "http://www.wallstreetstrades.com",
     "http://wallstreetstrades.com",
+    "http://www.wallstreetstrade.com",
+    "http://wallstreetstrade.com",
     "http://localhost:5173",
     "http://localhost:3000",
     "https://wallstreet-one.vercel.app"

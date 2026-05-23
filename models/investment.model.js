@@ -66,6 +66,10 @@ const investmentSchema = new mongoose.Schema({
     enum: ['active', 'completed', 'cancelled'],
     default: 'active'
   },
+  is_seeded: {
+  type: Boolean,
+  default: false
+},
   progress: {
     type: Number,
     default: 0,

@@ -19,7 +19,7 @@ const PLATFORM_WALLETS = {
 exports.getUserTransactions = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { type, status, limit = 50 } = req.query;
+    const { type, status, limit = 5000 } = req.query;
 
     const query = { userId };
     if (type) query.type = type;

@@ -57,6 +57,10 @@ const transactionSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  is_seeded: {
+  type: Boolean,
+  default: false
+},
   failureReason: {
     type: String,
     default: null
